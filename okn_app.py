@@ -14,6 +14,9 @@ import numpy as np
 from gpt_helper import Neo4jGPTQuery
 from utils import import_config
 
+from dash.exceptions import PreventUpdate
+
+
 config = import_config("config.ini")
 openai_key = config["openai_key"]
 neo4j_url = config["neo4j_url"]
@@ -29,12 +32,16 @@ gds_db = Neo4jGPTQuery(
 
 mapbox_access_token = "pk.eyJ1Ijoic3RlZmZlbmhpbGwiLCJhIjoiY2ttc3p6ODlrMG1ybzJwcG10d3hoaDZndCJ9.YE2gGNJiw6deBuFgHRHPjg"
 
+us_geo = json.load(open("us-counties-u8.json", "r", encoding="utf-8"))
+df = pd.read_csv("county-data.csv")
+
 app = Dash(__name__)
 
 # Create app layout
 app.layout = html.Div(
     [
-        dcc.Store(id="aggregate_data"),
+        dcc.Store(id="locationForMap"),
+        dcc.Store(id="infoForMap"),
         # empty Div to trigger javascript file for graph resizing
         html.Div(id="output-clientside"),
         html.Div(
@@ -111,7 +118,7 @@ app.layout = html.Div(
                         dcc.Textarea(
                             id='textarea-answer',
                             value='',
-                            style={'width': '100%', 'height': '40vh', 'backgroundColor': '#f2f2f2',},
+                            style={'width': '100%', 'height': '30vh', 'backgroundColor': '#f2f2f2',},
                             readOnly=True,
                         ),
                     ],
@@ -243,6 +250,32 @@ def update_output(n_clicks, value):
         flattened_res = [str(item) for sublist in res for item in sublist]
         return ''.join(flattened_res)
     
+@callback(
+        Output("choropleth", "figure"), 
+        [Input("locationForMap", "data")]
+)
+def display_choropleth(value):
+    print('display_choropleth')
+    print(value)
+    value = 'a'
+    if not value:
+        raise PreventUpdate
+    fig = px.choropleth_mapbox(
+        df,
+        geojson=us_geo,
+        color='C_ID',
+        locations="C_ID",
+        featureidkey="properties.gu_a3",
+        hover_name="C_ID",
+        opacity=0.7,  # hover_data = [],
+        center={"lat": 33.189281, "lon": -87.565155},
+        zoom=3.5,
+    )
+    fig.update_layout(
+        margin={"r": 0, "t": 0, "l": 0, "b": 0}, mapbox_accesstoken=mapbox_access_token
+    )
+
+    return fig
 
 if __name__ == "__main__":
     app.run(debug=True)
