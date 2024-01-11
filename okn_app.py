@@ -12,6 +12,9 @@ import plotly.figure_factory as ff
 import numpy as np
 import os
 import requests
+import createMap
+import branca.colormap as cm
+
 
 from gpt_helper import Neo4jGPTQuery
 from utils import import_config
