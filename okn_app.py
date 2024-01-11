@@ -10,9 +10,14 @@ import plotly.graph_objs as go
 import statsmodels.api as sm
 import plotly.figure_factory as ff
 import numpy as np
+import os
+import requests
 
 from gpt_helper import Neo4jGPTQuery
 from utils import import_config
+
+import createMap
+import branca.colormap as cm
 
 config = import_config("config.ini")
 openai_key = config["openai_key"]
@@ -20,12 +25,12 @@ neo4j_url = config["neo4j_url"]
 neo4j_user = config["neo4j_user"]
 neo4j_password = config["neo4j_password"]
 
-gds_db = Neo4jGPTQuery(
-        url=neo4j_url,
-        user=neo4j_user,
-        password=neo4j_password,
-        openai_api_key=openai_key,
-    )
+# gds_db = Neo4jGPTQuery(
+#         url=neo4j_url,
+#         user=neo4j_user,
+#         password=neo4j_password,
+#         openai_api_key=openai_key,
+#     )
 
 mapbox_access_token = "pk.eyJ1Ijoic3RlZmZlbmhpbGwiLCJhIjoiY2ttc3p6ODlrMG1ybzJwcG10d3hoaDZndCJ9.YE2gGNJiw6deBuFgHRHPjg"
 
@@ -200,7 +205,7 @@ app.layout = html.Div(
                             className="row container-display",
                         ),
                         html.Div(
-                            [dcc.Graph(id="choropleth")],
+                            [html.Iframe(id="choropleth", style={'width': '100%', 'height': '500px'})],
                             # id="countGraphContainer",
                             className="pretty_container",
                         ),
@@ -239,10 +244,51 @@ colors2 = ["#fdca26", "#ed7953", "#bd3786", "#7201a8", "#0d0887"]
 )
 def update_output(n_clicks, value):
     if n_clicks > 0:
-        res = gds_db.run(value)
-        flattened_res = [str(item) for sublist in res for item in sublist]
-        return ''.join(flattened_res)
+        # res = gds_db.run(value)
+        # flattened_res = [str(item) for sublist in res for item in sublist]
+        # return ''.join(flattened_res)
+        return "This should be deleted"
+
+@app.callback(
+    Output("choropleth", "srcDoc"),
+    Input('textarea-query-button', 'n_clicks'),
+    State('textarea-query', 'value'))
+def update_map(n_clicks, input_value):
+    if n_clicks > 0:
+        path = "C:\\Users\\ryanw\PycharmProjects\dash_okn_demo\\"
+        json_file_path = os.path.join(path, 'floridaViolentCrimeData.json')
+
+        with open(json_file_path, 'r') as file:
+            florida_crime = json.load(file)
+
+        florida_crime_df = pd.DataFrame(list(florida_crime.items()), columns=['Key', 'Value'])
+
+        hasValues = any(florida_crime_df.dtypes.apply(lambda x: pd.api.types.is_numeric_dtype(x)))
+        description = "2022 Violent crime rate per 100k"
+        color = cm.linear.Blues_09
+
+        mapLocation, mergedData = createMap.CreateMap(florida_crime, hasValues, description, color)
+
+
+        #html.Iframe(id='map', src="http://localhost:8000/example.html", width='500', height='500')
+
+        # Read the HTML file and return its content
+        response = requests.get(mapLocation)
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            map_html = response.text  # or response.content for binary content
+        else:
+            print("Failed to retrieve the content")
+            map_html = "0"
+
+
+        # Optionally, remove the temporary file if desired
+        # os.remove(tmp_path)
+
+        return map_html
+    return None
     
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run_server(debug=True, port=8050)
