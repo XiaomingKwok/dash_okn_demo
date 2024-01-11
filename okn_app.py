@@ -12,6 +12,9 @@ import plotly.figure_factory as ff
 import numpy as np
 import os
 import requests
+import createMap
+import branca.colormap as cm
+
 
 from gpt_helper import Neo4jGPTQuery
 from utils import import_config
@@ -248,9 +251,10 @@ colors2 = ["#fdca26", "#ed7953", "#bd3786", "#7201a8", "#0d0887"]
 )
 def update_output(n_clicks, value):
     if n_clicks > 0:
-        res = gds_db.run(value)
-        flattened_res = [str(item) for sublist in res for item in sublist]
-        return ''.join(flattened_res)
+        # res = gds_db.run(value)
+        # flattened_res = [str(item) for sublist in res for item in sublist]
+        # return ''.join(flattened_res)
+        return "This should be deleted"
     
 @callback(
         Output("choropleth", "figure"), 
