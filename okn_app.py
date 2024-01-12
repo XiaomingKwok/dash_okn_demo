@@ -35,7 +35,7 @@ def CheckResponse(response):
         print("Failed to retrieve the content")
         return "0"
 
-default_map_location = 'http://localhost:8000/default_map.html'
+default_map_location = 'http://localhost:8000/maps/default_map.html'
 default_map = requests.get(default_map_location)
 # Check if the request was successful
 if default_map.status_code == 200:
@@ -331,7 +331,8 @@ def update_map(n_clicks, input_value):
 
         hasValues = any(florida_crime_df.dtypes.apply(lambda x: pd.api.types.is_numeric_dtype(x)))
         description = "2022 Violent crime rate per 100k"
-        color = cm.linear.Blues_09
+        # color = cm.linear.Blues_09
+        color = ['blue', 'red']
         area_type = 'cbsa'
 
         mapLocation, mergedData = createMap.CreateMap(area_type, florida_crime, hasValues, description, color)
@@ -349,7 +350,8 @@ def update_map(n_clicks, input_value):
         #     return map_html, colormap_html
 
         # Optionally, remove the temporary file if desired
-        # os.remove(tmp_path)
+        parts = mapLocation.split('maps/')
+        os.remove(os.path.join("maps", parts[1]))
         return map_html
 
     else:

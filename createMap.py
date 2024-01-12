@@ -10,6 +10,7 @@ import dash
 from dash import dcc
 from dash import html
 import json
+import uuid
 
 
 def parse_county_state(input_string):
@@ -38,6 +39,8 @@ def CreateMap(areaType, data, hasValues, description, color):
         geojson_location = 'geojson\states.geojson'
         isState = True
     else:
+        # geojson_location = 'geojson\CBSA.geojson'
+        # geojson_location = 'geojson\CBSA_smaller.geojson'
         geojson_location = 'geojson\CBSA.geojson'
         cbsafp_location = os.path.join("codes", "cbsa2fipsxw.txt")
         isCBSA = True
@@ -48,13 +51,13 @@ def CreateMap(areaType, data, hasValues, description, color):
         countyns = [""] * dataLen
         paramName = 'COUNTYNS'
         tooltipAlias = 'County: '
-        nameField = 'NAME'
 
     if isCBSA:
         areas = [""] * dataLen
-        paramName = 'cbsafp'
+        paramName = 'CBSAFP'
         tooltipAlias = 'CBSA Name: '
-        nameField = 'name'
+
+    nameField = 'NAME'
 
     values = [0] * dataLen
     i = 0
@@ -82,7 +85,8 @@ def CreateMap(areaType, data, hasValues, description, color):
     if gradient:
         max_value = max(values)
         min_value = min(values)
-        color_scale = color.scale(min_value, max_value)
+        color_scale = cm.LinearColormap(color, vmin=min_value, vmax=max_value)
+        # color_scale = color.scale(min_value, max_value)
         # colormap = cm.LinearColormap(color_scale, vmin= min_value, vmax=max_value)
         # colormap.save('colormap.html')
 
@@ -121,6 +125,9 @@ def CreateMap(areaType, data, hasValues, description, color):
     data_df = pd.DataFrame({paramName: df_key, 'VALUE': values})
 
     gdf = gpd.read_file(geojson_location)
+
+    # gdf.to_file('geojson\\CBSA_smallest.geojson', driver='GeoJSON')
+
     merged = gdf.merge(data_df, on=paramName)
 
     # fig = px.choropleth(merged, geojson=merged, locations=merged.index, color='VALUE',
@@ -190,10 +197,12 @@ def CreateMap(areaType, data, hasValues, description, color):
     if gradient:
         m.add_child(color_scale)
 
-    # Save the map
-    m.save('example.html')
+    mapFilename = f'map_{uuid.uuid4()}.html'
 
-    return "http://localhost:8000/example.html", merged
+    # Save the map
+    m.save(os.path.join("maps", mapFilename))
+
+    return "http://localhost:8000/maps/" + mapFilename, merged
 
 
 
