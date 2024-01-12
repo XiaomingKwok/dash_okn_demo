@@ -3,7 +3,7 @@ from folium.features import GeoJsonTooltip
 import geopandas as gpd
 import pandas as pd
 import branca.colormap as cm
-import lookupCountyns
+import lookupCodes
 import os
 import plotly.express as px
 import dash
@@ -23,24 +23,56 @@ def parse_county_state(input_string):
     return county, state
 
 
-def CreateMap(data, hasValues, description, color):
+def CreateMap(areaType, data, hasValues, description, color):
 
     dataLen = len(data)
+    isCounty = False
+    isState = False
+    isCBSA = False
 
-    geojson_location = 'C:\\Users\\ryanw\PycharmProjects\InteractiveMap\geojson\counties.geojson'
-    county_location = os.path.join("stateCodes", "st01_al_cou2020.txt")
+    if areaType.lower() == 'county':
+        geojson_location = 'geojson\counties.geojson'
+        county_location = os.path.join("codes", "st01_al_cou2020.txt")
+        isCounty = True
+    elif areaType.lower() == 'state':
+        geojson_location = 'geojson\states.geojson'
+        isState = True
+    else:
+        geojson_location = 'geojson\CBSA.geojson'
+        cbsafp_location = os.path.join("codes", "cbsa2fipsxw.txt")
+        isCBSA = True
 
-    counties = [""] * dataLen
-    states = [""] * dataLen
-    countyns = [""] * dataLen
+    if isCounty:
+        counties = [""] * dataLen
+        states = [""] * dataLen
+        countyns = [""] * dataLen
+        paramName = 'COUNTYNS'
+        tooltipAlias = 'County: '
+        nameField = 'NAME'
+
+    if isCBSA:
+        areas = [""] * dataLen
+        paramName = 'cbsafp'
+        tooltipAlias = 'CBSA Name: '
+        nameField = 'name'
+
     values = [0] * dataLen
     i = 0
 
-    for key, value in data.items():
-        counties[i], states[i] = parse_county_state(key)
-        values[i] = value
-        countyns[i] = str(lookupCountyns.find_countyns(county_location, counties[i], states[i])).zfill(8)
-        i += 1
+    if isCounty:
+        for key, value in data.items():
+            counties[i], states[i] = parse_county_state(key)
+            values[i] = value
+            countyns[i] = str(lookupCodes.find_countyns(county_location, counties[i], states[i])).zfill(8)
+            i += 1
+        df_key = countyns
+
+    if isCBSA:
+        for key, value in data.items():
+            areas[i] = key
+            values[i] = value
+            i += 1
+        df_key = areas
 
     if hasValues and dataLen >= 2:
         gradient = True
@@ -51,19 +83,21 @@ def CreateMap(data, hasValues, description, color):
         max_value = max(values)
         min_value = min(values)
         color_scale = color.scale(min_value, max_value)
+        # colormap = cm.LinearColormap(color_scale, vmin= min_value, vmax=max_value)
+        # colormap.save('colormap.html')
 
-    def select_style_function(merged):
+    def select_style_function(merged, paramName):
         def style_function(feature):
-            if feature['properties']['COUNTYNS'] in merged['COUNTYNS'].values:
+            if feature['properties'][paramName] in merged[paramName].values:
                 return {'fillColor': 'blue', 'color': 'gray'}
             else:
                 return {'fillColor': 'gray', 'color': 'gray'}
 
         return style_function
 
-    def gradient_style_function(merged):
+    def gradient_style_function(merged, paramName):
         def style_function(feature):
-            value = merged.loc[merged['COUNTYNS'] == feature['properties']['COUNTYNS'], 'VALUE']
+            value = merged.loc[merged[paramName] == feature['properties'][paramName], 'VALUE']
             if value.size == 0:
                 return {
                     'fillColor': 'gray',
@@ -84,11 +118,10 @@ def CreateMap(data, hasValues, description, color):
         return style_function
 
     # Create a Folium map
-
-    data_df = pd.DataFrame({'COUNTYNS': countyns, 'VALUE': values})
+    data_df = pd.DataFrame({paramName: df_key, 'VALUE': values})
 
     gdf = gpd.read_file(geojson_location)
-    merged = gdf.merge(data_df, on='COUNTYNS')
+    merged = gdf.merge(data_df, on=paramName)
 
     # fig = px.choropleth(merged, geojson=merged, locations=merged.index, color='VALUE',
     #                     color_continuous_scale='Viridis')
@@ -102,13 +135,9 @@ def CreateMap(data, hasValues, description, color):
     #
     # app.run_server(debug=True, port=8050)
 
-
-
-
-
     tooltip = GeoJsonTooltip(
-        fields=['NAME', 'VALUE'],
-        aliases=['County: ', description + ': '],  #Displayed text before the value
+        fields=[nameField, 'VALUE'],
+        aliases=[tooltipAlias, description + ': '],  #Displayed text before the value
         localize=True,
         sticky=False,
         labels=True,
@@ -123,11 +152,11 @@ def CreateMap(data, hasValues, description, color):
 
     # Add Choropleth layer
     if gradient:
-        my_style_function = gradient_style_function(merged)
+        my_style_function = gradient_style_function(merged, paramName)
     else:
-        my_style_function = select_style_function(merged)
+        my_style_function = select_style_function(merged, paramName)
 
-    mergedProjected = merged.to_crs('EPSG:5070')
+    # mergedProjected = merged.to_crs('EPSG:5070')
 
     mapX = merged.centroid.y.median()
     mapY = merged.centroid.x.median()
@@ -141,7 +170,7 @@ def CreateMap(data, hasValues, description, color):
     swCorner = [minX, minY]
     neCorner = [maxX, maxY]
 
-    maxRange = max(rangeX, rangeY)
+    # maxRange = max(rangeX, rangeY)
 
     #print("The distance in x is %f", maxRange)
 
@@ -157,6 +186,9 @@ def CreateMap(data, hasValues, description, color):
         style_function=my_style_function,
         tooltip=tooltip
     ).add_to(m)
+
+    if gradient:
+        m.add_child(color_scale)
 
     # Save the map
     m.save('example.html')

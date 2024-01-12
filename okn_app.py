@@ -28,6 +28,13 @@ from dash.exceptions import PreventUpdate
 # # Save the map to an HTML file
 # default_map_image.save('default_map.html')
 
+def CheckResponse(response):
+    if response.status_code == 200:
+        return response.text  # or response.content for binary content
+    else:
+        print("Failed to retrieve the content")
+        return "0"
+
 default_map_location = 'http://localhost:8000/default_map.html'
 default_map = requests.get(default_map_location)
 # Check if the request was successful
@@ -228,7 +235,8 @@ app.layout = html.Div(
                             className="row container-display",
                         ),
                         html.Div(
-                            [html.Iframe(id="choropleth", srcDoc=default_map_html, style={'width': '100%', 'height': '500px'})],
+                            [html.Iframe(id="choropleth", srcDoc=default_map_html,
+                                         style={'width': '100%', 'height': '500px'})],
                             # id="countGraphContainer",
                             className="pretty_container",
                         ),
@@ -313,7 +321,8 @@ def display_choropleth(value):
 def update_map(n_clicks, input_value):
     if n_clicks > 0:
         path = "C:\\Users\\ryanw\PycharmProjects\dash_okn_demo\\"
-        json_file_path = os.path.join(path, 'floridaViolentCrimeData.json')
+        # json_file_path = os.path.join(path, 'floridaViolentCrimeData.json')
+        json_file_path = os.path.join(path, 'fake_cbsa_data.json')
 
         with open(json_file_path, 'r') as file:
             florida_crime = json.load(file)
@@ -323,27 +332,26 @@ def update_map(n_clicks, input_value):
         hasValues = any(florida_crime_df.dtypes.apply(lambda x: pd.api.types.is_numeric_dtype(x)))
         description = "2022 Violent crime rate per 100k"
         color = cm.linear.Blues_09
+        area_type = 'cbsa'
 
-        mapLocation, mergedData = createMap.CreateMap(florida_crime, hasValues, description, color)
+        mapLocation, mergedData = createMap.CreateMap(area_type, florida_crime, hasValues, description, color)
 
 
         #html.Iframe(id='map', src="http://localhost:8000/example.html", width='500', height='500')
 
         # Read the HTML file and return its content
-        response = requests.get(mapLocation)
+        map_response = requests.get(mapLocation)
+        map_html = CheckResponse(map_response)
 
-        # Check if the request was successful
-        if response.status_code == 200:
-            map_html = response.text  # or response.content for binary content
-        else:
-            print("Failed to retrieve the content")
-            map_html = "0"
-
+        # if hasValues:
+        #     colormap_response = requests.get(colormapLocation)
+        #     colormap_html = CheckResponse(colormap_response)
+        #     return map_html, colormap_html
 
         # Optionally, remove the temporary file if desired
         # os.remove(tmp_path)
-
         return map_html
+
     else:
         return default_map_html
     
