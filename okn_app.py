@@ -14,6 +14,8 @@ import os
 import requests
 import createMap
 import branca.colormap as cm
+# import folium
+
 
 
 from gpt_helper import Neo4jGPTQuery
@@ -21,6 +23,20 @@ from utils import import_config
 
 from dash.exceptions import PreventUpdate
 
+# default_map_image = folium.Map(location=[39.8283, -98.5795], zoom_start=4)
+#
+# # Save the map to an HTML file
+# default_map_image.save('default_map.html')
+
+default_map_location = 'http://localhost:8000/default_map.html'
+default_map = requests.get(default_map_location)
+# Check if the request was successful
+if default_map.status_code == 200:
+    default_map_html = default_map.text  # or response.content for binary content
+    print("Map loaded successfully")
+else:
+    default_map_html = '0'
+    print("Map not loaded successfully")
 
 config = import_config("config.ini")
 openai_key = config["openai_key"]
@@ -37,8 +53,8 @@ neo4j_password = config["neo4j_password"]
 
 mapbox_access_token = "pk.eyJ1Ijoic3RlZmZlbmhpbGwiLCJhIjoiY2ttc3p6ODlrMG1ybzJwcG10d3hoaDZndCJ9.YE2gGNJiw6deBuFgHRHPjg"
 
-us_geo = json.load(open("us-counties-u8.json", "r", encoding="utf-8"))
-df = pd.read_csv("county-data.csv")
+#us_geo = json.load(open("us-counties-u8.json", "r", encoding="utf-8"))
+#df = pd.read_csv("county-data.csv")
 
 app = Dash(__name__)
 
@@ -212,7 +228,7 @@ app.layout = html.Div(
                             className="row container-display",
                         ),
                         html.Div(
-                            [html.Iframe(id="choropleth", style={'width': '100%', 'height': '500px'})],
+                            [html.Iframe(id="choropleth", srcDoc=default_map_html, style={'width': '100%', 'height': '500px'})],
                             # id="countGraphContainer",
                             className="pretty_container",
                         ),
@@ -256,30 +272,30 @@ def update_output(n_clicks, value):
         # return ''.join(flattened_res)
         return "This should be deleted"
     
-@callback(
-        Output("choropleth", "figure"), 
-        [Input("locationForMap", "data")]
-)
-def display_choropleth(value):
-    print('display_choropleth')
-    print(value)
-    value = 'a'
-    if not value:
-        raise PreventUpdate
-    fig = px.choropleth_mapbox(
-        df,
-        geojson=us_geo,
-        color='C_ID',
-        locations="C_ID",
-        featureidkey="properties.gu_a3",
-        hover_name="C_ID",
-        opacity=0.7,  # hover_data = [],
-        center={"lat": 33.189281, "lon": -87.565155},
-        zoom=3.5,
-    )
-    fig.update_layout(
-        margin={"r": 0, "t": 0, "l": 0, "b": 0}, mapbox_accesstoken=mapbox_access_token
-    )
+# @callback(
+#         Output("choropleth", "figure"),
+#         [Input("locationForMap", "data")]
+# )
+# def display_choropleth(value):
+#     print('display_choropleth')
+#     print(value)
+#     value = 'a'
+#     if not value:
+#         raise PreventUpdate
+#     fig = px.choropleth_mapbox(
+#         df,
+#         geojson=us_geo,
+#         color='C_ID',
+#         locations="C_ID",
+#         featureidkey="properties.gu_a3",
+#         hover_name="C_ID",
+#         opacity=0.7,  # hover_data = [],
+#         center={"lat": 33.189281, "lon": -87.565155},
+#         zoom=3.5,
+#     )
+#     fig.update_layout(
+#         margin={"r": 0, "t": 0, "l": 0, "b": 0}, mapbox_accesstoken=mapbox_access_token
+#     )
 
 @app.callback(
     Output("choropleth", "srcDoc"),
@@ -319,8 +335,11 @@ def update_map(n_clicks, input_value):
         # os.remove(tmp_path)
 
         return map_html
-    return None
+    else:
+        return default_map_html
     
 
 if __name__ == "__main__":
+
+
     app.run_server(debug=True, port=8050)
