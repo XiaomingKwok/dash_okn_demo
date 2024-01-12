@@ -14,6 +14,8 @@ import os
 import requests
 import createMap
 import branca.colormap as cm
+# import folium
+
 
 
 from gpt_helper import Neo4jGPTQuery
@@ -21,6 +23,20 @@ from utils import import_config
 
 from dash.exceptions import PreventUpdate
 
+# default_map_image = folium.Map(location=[39.8283, -98.5795], zoom_start=4)
+#
+# # Save the map to an HTML file
+# default_map_image.save('default_map.html')
+
+default_map_location = 'http://localhost:8000/default_map.html'
+default_map = requests.get(default_map_location)
+# Check if the request was successful
+if default_map.status_code == 200:
+    default_map_html = default_map.text  # or response.content for binary content
+    print("Map loaded successfully")
+else:
+    default_map_html = '0'
+    print("Map not loaded successfully")
 
 config = import_config("config.ini")
 openai_key = config["openai_key"]
@@ -212,7 +228,7 @@ app.layout = html.Div(
                             className="row container-display",
                         ),
                         html.Div(
-                            [html.Iframe(id="choropleth", style={'width': '100%', 'height': '500px'})],
+                            [html.Iframe(id="choropleth", srcDoc=default_map_html, style={'width': '100%', 'height': '500px'})],
                             # id="countGraphContainer",
                             className="pretty_container",
                         ),
@@ -328,7 +344,8 @@ def update_map(n_clicks, input_value):
         # os.remove(tmp_path)
 
         return map_html
-    return None
+    else:
+        return default_map_html
     
 
 if __name__ == "__main__":
