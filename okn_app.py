@@ -10,12 +10,40 @@ import plotly.graph_objs as go
 import statsmodels.api as sm
 import plotly.figure_factory as ff
 import numpy as np
+import os
+import requests
+import createMap
+import branca.colormap as cm
+# import folium
+
+
 
 from gpt_helper import Neo4jGPTQuery
 from utils import import_config
 
 from dash.exceptions import PreventUpdate
 
+# default_map_image = folium.Map(location=[39.8283, -98.5795], zoom_start=4)
+#
+# # Save the map to an HTML file
+# default_map_image.save('default_map.html')
+
+def CheckResponse(response):
+    if response.status_code == 200:
+        return response.text  # or response.content for binary content
+    else:
+        print("Failed to retrieve the content")
+        return "0"
+
+default_map_location = 'http://localhost:8000/maps/default_map.html'
+default_map = requests.get(default_map_location)
+# Check if the request was successful
+if default_map.status_code == 200:
+    default_map_html = default_map.text  # or response.content for binary content
+    print("Map loaded successfully")
+else:
+    default_map_html = '0'
+    print("Map not loaded successfully")
 
 config = import_config("config.ini")
 openai_key = config["openai_key"]
@@ -23,17 +51,17 @@ neo4j_url = config["neo4j_url"]
 neo4j_user = config["neo4j_user"]
 neo4j_password = config["neo4j_password"]
 
-gds_db = Neo4jGPTQuery(
-        url=neo4j_url,
-        user=neo4j_user,
-        password=neo4j_password,
-        openai_api_key=openai_key,
-    )
+# gds_db = Neo4jGPTQuery(
+#         url=neo4j_url,
+#         user=neo4j_user,
+#         password=neo4j_password,
+#         openai_api_key=openai_key,
+#     )
 
 mapbox_access_token = "pk.eyJ1Ijoic3RlZmZlbmhpbGwiLCJhIjoiY2ttc3p6ODlrMG1ybzJwcG10d3hoaDZndCJ9.YE2gGNJiw6deBuFgHRHPjg"
 
-us_geo = json.load(open("us-counties-u8.json", "r", encoding="utf-8"))
-df = pd.read_csv("county-data.csv")
+#us_geo = json.load(open("us-counties-u8.json", "r", encoding="utf-8"))
+#df = pd.read_csv("county-data.csv")
 
 app = Dash(__name__)
 
@@ -207,7 +235,8 @@ app.layout = html.Div(
                             className="row container-display",
                         ),
                         html.Div(
-                            [dcc.Graph(id="choropleth")],
+                            [html.Iframe(id="choropleth", srcDoc=default_map_html,
+                                         style={'width': '100%', 'height': '500px'})],
                             # id="countGraphContainer",
                             className="pretty_container",
                         ),
@@ -246,36 +275,91 @@ colors2 = ["#fdca26", "#ed7953", "#bd3786", "#7201a8", "#0d0887"]
 )
 def update_output(n_clicks, value):
     if n_clicks > 0:
-        res = gds_db.run(value)
-        flattened_res = [str(item) for sublist in res for item in sublist]
-        return ''.join(flattened_res)
+        # res = gds_db.run(value)
+        # flattened_res = [str(item) for sublist in res for item in sublist]
+        # return ''.join(flattened_res)
+        return "This should be deleted"
     
-@callback(
-        Output("choropleth", "figure"), 
-        [Input("locationForMap", "data")]
-)
-def display_choropleth(value):
-    print('display_choropleth')
-    print(value)
-    value = 'a'
-    if not value:
-        raise PreventUpdate
-    fig = px.choropleth_mapbox(
-        df,
-        geojson=us_geo,
-        color='C_ID',
-        locations="C_ID",
-        featureidkey="properties.gu_a3",
-        hover_name="C_ID",
-        opacity=0.7,  # hover_data = [],
-        center={"lat": 33.189281, "lon": -87.565155},
-        zoom=3.5,
-    )
-    fig.update_layout(
-        margin={"r": 0, "t": 0, "l": 0, "b": 0}, mapbox_accesstoken=mapbox_access_token
-    )
+# @callback(
+#         Output("choropleth", "figure"),
+#         [Input("locationForMap", "data")]
+# )
+# def display_choropleth(value):
+#     print('display_choropleth')
+#     print(value)
+#     value = 'a'
+#     if not value:
+#         raise PreventUpdate
+#     fig = px.choropleth_mapbox(
+#         df,
+#         geojson=us_geo,
+#         color='C_ID',
+#         locations="C_ID",
+#         featureidkey="properties.gu_a3",
+#         hover_name="C_ID",
+#         opacity=0.7,  # hover_data = [],
+#         center={"lat": 33.189281, "lon": -87.565155},
+#         zoom=3.5,
+#     )
+#     fig.update_layout(
+#         margin={"r": 0, "t": 0, "l": 0, "b": 0}, mapbox_accesstoken=mapbox_access_token
+#     )
 
-    return fig
+@app.callback(
+    Output("choropleth", "srcDoc"),
+    Input('textarea-query-button', 'n_clicks'),
+    State('textarea-query', 'value'))
+def update_map(n_clicks, input_value):
+    if n_clicks > 0:
+        path = "C:\\Users\\ryanw\PycharmProjects\dash_okn_demo\\"
+        # json_file_path = os.path.join(path, 'floridaViolentCrimeData.json')
+        json_file_path = os.path.join(path, 'fake_cbsa_data.json')
+        # json_file_path = os.path.join(path, 'fake_cbsa_data2.json')
+
+        # color = cm.linear.Blues_09
+        # color = ['blue', 'red']
+        color = colors[5]
+
+        with open(json_file_path, 'r') as file:
+            florida_crime = json.load(file)
+
+        if isinstance(florida_crime, dict):
+            florida_crime_df = pd.DataFrame(list(florida_crime.items()), columns=['Key', 'Value'])
+            if len(florida_crime_df) > 1:
+                color = ['blue', 'red']
+        elif isinstance(florida_crime, list):
+            florida_crime_df = pd.DataFrame(florida_crime, columns=['Key'])
+
+        hasValues = any(florida_crime_df.dtypes.apply(lambda x: pd.api.types.is_numeric_dtype(x)))
+        description = "2022 Violent crime rate per 100k"
+
+        area_type = 'cbsa'
+
+        mapLocation, mergedData = createMap.CreateMap(area_type, florida_crime, hasValues, description, color)
+
+
+        #html.Iframe(id='map', src="http://localhost:8000/example.html", width='500', height='500')
+
+        # Read the HTML file and return its content
+        map_response = requests.get(mapLocation)
+        map_html = CheckResponse(map_response)
+
+
+        # if hasValues:
+        #     colormap_response = requests.get(colormapLocation)
+        #     colormap_html = CheckResponse(colormap_response)
+        #     return map_html, colormap_html
+
+        # Optionally, remove the temporary file if desired
+        parts = mapLocation.split('maps/')
+        os.remove(os.path.join("maps", parts[1]))
+        return map_html
+
+    else:
+        return default_map_html
+    
 
 if __name__ == "__main__":
-    app.run(debug=True)
+
+
+    app.run_server(debug=True, port=8050)
