@@ -62,20 +62,32 @@ def CreateMap(areaType, data, hasValues, description, color):
     values = [0] * dataLen
     i = 0
 
-    if isCounty:
-        for key, value in data.items():
-            counties[i], states[i] = parse_county_state(key)
-            values[i] = value
-            countyns[i] = str(lookupCodes.find_countyns(county_location, counties[i], states[i])).zfill(8)
-            i += 1
-        df_key = countyns
+    if hasValues:
+        if isCounty:
+            for key, value in data.items():
+                counties[i], states[i] = parse_county_state(key)
+                values[i] = value
+                countyns[i] = str(lookupCodes.find_countyns(county_location, counties[i], states[i])).zfill(8)
+                i += 1
+            df_key = countyns
 
-    if isCBSA:
-        for key, value in data.items():
-            areas[i] = key
-            values[i] = value
-            i += 1
-        df_key = areas
+        if isCBSA:
+            for key, value in data.items():
+                areas[i] = key
+                values[i] = value
+                i += 1
+            df_key = areas
+
+    else:
+        if isCounty:
+            for key in data:
+                counties[i], states[i] = parse_county_state(key)
+                countyns[i] = str(lookupCodes.find_countyns(county_location, counties[i], states[i])).zfill(8)
+                i += 1
+            df_key = countyns
+
+        if isCBSA:
+            df_key = data
 
     if hasValues and dataLen >= 2:
         gradient = True
@@ -93,10 +105,9 @@ def CreateMap(areaType, data, hasValues, description, color):
     def select_style_function(merged, paramName):
         def style_function(feature):
             if feature['properties'][paramName] in merged[paramName].values:
-                return {'fillColor': 'blue', 'color': 'gray'}
+                return {'fillColor': color, 'color': 'gray'}
             else:
                 return {'fillColor': 'gray', 'color': 'gray'}
-
         return style_function
 
     def gradient_style_function(merged, paramName):
@@ -142,20 +153,36 @@ def CreateMap(areaType, data, hasValues, description, color):
     #
     # app.run_server(debug=True, port=8050)
 
-    tooltip = GeoJsonTooltip(
-        fields=[nameField, 'VALUE'],
-        aliases=[tooltipAlias, description + ': '],  #Displayed text before the value
-        localize=True,
-        sticky=False,
-        labels=True,
-        style="""
-            background-color: #F0EFEF;
-            border: 2px solid black;
-            border-radius: 3px;
-            box-shadow: 3px;
-        """,
-        max_width=800,
-    )
+    if hasValues:
+        tooltip = GeoJsonTooltip(
+            fields=[nameField, 'VALUE'],
+            aliases=[tooltipAlias, description + ': '],  #Displayed text before the value
+            localize=True,
+            sticky=False,
+            labels=True,
+            style="""
+                background-color: #F0EFEF;
+                border: 2px solid black;
+                border-radius: 3px;
+                box-shadow: 3px;
+            """,
+            max_width=800,
+        )
+    else:
+        tooltip = GeoJsonTooltip(
+            fields=[nameField],
+            aliases=[tooltipAlias],  # Displayed text before the value
+            localize=True,
+            sticky=False,
+            labels=True,
+            style="""
+                        background-color: #F0EFEF;
+                        border: 2px solid black;
+                        border-radius: 3px;
+                        box-shadow: 3px;
+                    """,
+            max_width=800,
+        )
 
     # Add Choropleth layer
     if gradient:

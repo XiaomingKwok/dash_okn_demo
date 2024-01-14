@@ -314,16 +314,25 @@ def update_map(n_clicks, input_value):
         path = "C:\\Users\\ryanw\PycharmProjects\dash_okn_demo\\"
         # json_file_path = os.path.join(path, 'floridaViolentCrimeData.json')
         json_file_path = os.path.join(path, 'fake_cbsa_data.json')
+        # json_file_path = os.path.join(path, 'fake_cbsa_data2.json')
+
+        # color = cm.linear.Blues_09
+        # color = ['blue', 'red']
+        color = colors[5]
 
         with open(json_file_path, 'r') as file:
             florida_crime = json.load(file)
 
-        florida_crime_df = pd.DataFrame(list(florida_crime.items()), columns=['Key', 'Value'])
+        if isinstance(florida_crime, dict):
+            florida_crime_df = pd.DataFrame(list(florida_crime.items()), columns=['Key', 'Value'])
+            if len(florida_crime_df) > 1:
+                color = ['blue', 'red']
+        elif isinstance(florida_crime, list):
+            florida_crime_df = pd.DataFrame(florida_crime, columns=['Key'])
 
         hasValues = any(florida_crime_df.dtypes.apply(lambda x: pd.api.types.is_numeric_dtype(x)))
         description = "2022 Violent crime rate per 100k"
-        # color = cm.linear.Blues_09
-        color = ['blue', 'red']
+
         area_type = 'cbsa'
 
         mapLocation, mergedData = createMap.CreateMap(area_type, florida_crime, hasValues, description, color)
@@ -334,6 +343,7 @@ def update_map(n_clicks, input_value):
         # Read the HTML file and return its content
         map_response = requests.get(mapLocation)
         map_html = CheckResponse(map_response)
+
 
         # if hasValues:
         #     colormap_response = requests.get(colormapLocation)
