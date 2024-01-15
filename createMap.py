@@ -224,12 +224,17 @@ def CreateMap(areaType, data, hasValues, description, color):
     if gradient:
         m.add_child(color_scale)
 
-    mapFilename = f'map_{uuid.uuid4()}.html'
+    # mapFilename = f'map_{uuid.uuid4()}.html'
+    #
+    # # Save the map
+    # m.save(os.path.join("maps", mapFilename))
+    #
+    # return "http://localhost:8000/maps/" + mapFilename, merged
 
-    # Save the map
-    m.save(os.path.join("maps", mapFilename))
+    map_html =m._repr_html_()
 
-    return "http://localhost:8000/maps/" + mapFilename, merged
+    return map_html, merged
+
 
 
 

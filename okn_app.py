@@ -14,7 +14,7 @@ import os
 import requests
 import createMap
 import branca.colormap as cm
-# import folium
+import folium
 
 
 
@@ -281,38 +281,39 @@ colors2 = ["#fdca26", "#ed7953", "#bd3786", "#7201a8", "#0d0887"]
 )
 def update_output(n_clicks, value):
     if n_clicks > 0:
-        res = gds_db.run(value)
-        flattened_res = [str(item) for sublist in res for item in sublist]
-        answer = ''.join(flattened_res)
-        return answer, answer
+        # res = gds_db.run(value)
+        # flattened_res = [str(item) for sublist in res for item in sublist]
+        # answer = ''.join(flattened_res)
+        # return answer, answer
+        return "Delete this", " "
     else:
         return ' ', ' '
     
-@callback(
-        Output("choropleth", "figure"), 
-        [Input("locationForMap", "data")]
-)
-def display_choropleth(value):
-    # print('display_choropleth')
-    # print(value)
-    # if not value:
-    #     raise PreventUpdate
-    index = np.random.randint(0, 3)
-    center_list=[{"lat": 29.5145864, "lon": -98.3915999},{"lat": 40.4314699, "lon": -80.0629009},{"lat": 33.189281, "lon": -87.565155}]
-    fig = px.choropleth_mapbox(
-        df,
-        geojson=us_geo,
-        color='C_ID',
-        locations="C_ID",
-        featureidkey="properties.geoid",
-        hover_name="C_ID",
-        opacity=0.7,  # hover_data = [],
-        center=center_list[index],
-        zoom=5,
-    )
-    fig.update_layout(
-        margin={"r": 0, "t": 0, "l": 0, "b": 0}, mapbox_accesstoken=mapbox_access_token
-    )
+# @callback(
+#         Output("choropleth", "figure"),
+#         [Input("locationForMap", "data")]
+# )
+# def display_choropleth(value):
+#     # print('display_choropleth')
+#     # print(value)
+#     # if not value:
+#     #     raise PreventUpdate
+#     index = np.random.randint(0, 3)
+#     center_list=[{"lat": 29.5145864, "lon": -98.3915999},{"lat": 40.4314699, "lon": -80.0629009},{"lat": 33.189281, "lon": -87.565155}]
+#     fig = px.choropleth_mapbox(
+#         df,
+#         geojson=us_geo,
+#         color='C_ID',
+#         locations="C_ID",
+#         featureidkey="properties.geoid",
+#         hover_name="C_ID",
+#         opacity=0.7,  # hover_data = [],
+#         center=center_list[index],
+#         zoom=5,
+#     )
+#     fig.update_layout(
+#         margin={"r": 0, "t": 0, "l": 0, "b": 0}, mapbox_accesstoken=mapbox_access_token
+#     )
 
 @app.callback(
     Output("choropleth", "srcDoc"),
@@ -320,7 +321,7 @@ def display_choropleth(value):
     State('textarea-query', 'value'))
 def update_map(n_clicks, input_value):
     if n_clicks > 0:
-        path = "C:\\Users\\ryanw\PycharmProjects\dash_okn_demo\\"
+        path = "."
         # json_file_path = os.path.join(path, 'floridaViolentCrimeData.json')
         json_file_path = os.path.join(path, 'fake_cbsa_data.json')
         # json_file_path = os.path.join(path, 'fake_cbsa_data2.json')
@@ -344,14 +345,17 @@ def update_map(n_clicks, input_value):
 
         area_type = 'cbsa'
 
-        mapLocation, mergedData = createMap.CreateMap(area_type, florida_crime, hasValues, description, color)
+        # mapLocation, mergedData = createMap.CreateMap(area_type, florida_crime, hasValues, description, color)
 
 
         #html.Iframe(id='map', src="http://localhost:8000/example.html", width='500', height='500')
 
         # Read the HTML file and return its content
-        map_response = requests.get(mapLocation)
-        map_html = CheckResponse(map_response)
+        # map_response = requests.get(mapLocation)
+        # map_html = CheckResponse(map_response)
+
+        map_html, mergedData = createMap.CreateMap(area_type, florida_crime, hasValues, description, color)
+        map_iframe = html.Iframe(srcDoc=map_html, width='100%', height='500px')
 
 
         # if hasValues:
@@ -360,8 +364,8 @@ def update_map(n_clicks, input_value):
         #     return map_html, colormap_html
 
         # Optionally, remove the temporary file if desired
-        parts = mapLocation.split('maps/')
-        os.remove(os.path.join("maps", parts[1]))
+        # parts = mapLocation.split('maps/')
+        # os.remove(os.path.join("maps", parts[1]))
         return map_html
 
     else:
