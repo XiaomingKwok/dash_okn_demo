@@ -1,0 +1,38 @@
+County,C_ID,Longitude ,Latitude 
+Not in a metropolitan area,99999,,
+"San Antonio-New Braunfels, TX",41700,29.5145864,-98.3915999
+"Los Angeles-Long Beach-Anaheim, CA",31080,34.1968154,-118.0907389
+"Detroit-Warren-Dearborn, MI",19820,42.3910639,-83.0866769
+"Pittsburgh, PA",38300,40.4314699,-80.0629009
+"Atlanta-Sandy Springs-Roswell, GA",12060,33.7448314,-84.3697529
+"San Francisco-Oakland-Hayward, CA",41860,37.8069942,-122.3582689
+All other metropolitan areas,99998,,
+"Cincinnati, OH-KY-IN",17140,39.0929502,-84.4865589
+"Oklahoma City, OK",36420,35.4432621,-97.4698069
+"San Jose-Sunnyvale-Santa Clara, CA",41940,36.8828773,-121.4133679
+"Houston-The Woodlands-Sugar Land, TX",26420,29.8576146,-95.4309009
+"Richmond, VA",40060,37.5300936,-77.4818489
+"Dallas-Fort Worth-Arlington, TX",19100,32.8700675,-96.9780079
+"Philadelphia-Camden-Wilmington, PA-NJ-DE-MD",37980,39.9221501,-75.2978399
+"Tampa-St. Petersburg-Clearwater, FL",45300,28.1789997,-82.4803979
+"New Orleans-Metairie, LA",35380,29.9689086,-90.1132799
+"Baltimore-Columbia-Towson, MD",12580,39.3666071,-76.6427929
+"Riverside-San Bernardino-Ontario, CA",40140,34.6104204,-116.0489629
+"Rochester, NY",40380,43.1642579,-77.6168319
+"Memphis, TN-MS-AR",32820,35.0610832,-89.8389809
+"Denver-Aurora-Lakewood, CO",19740,39.3633361,-106.2770472
+"Las Vegas-Henderson-Paradise, NV",29820,36.0828843,-115.1088049
+"Portland-Vancouver-Hillsboro, OR-WA",38900,45.6314165,-123.9688012
+"Kansas City, MO-KS",28140,39.1086412,-94.6265969
+"Chicago-Naperville-Elgin, IL-IN-WI",16980,41.847254,-87.7852319
+"Seattle-Tacoma-Bellevue, WA",42660,47.6034216,-121.8844599
+"Milwaukee-Waukesha-West Allis, WI",33340,43.1838689,-88.1167639
+"Cleveland-Elyria, OH",17460,41.43903,-81.9229549
+"Minneapolis-St. Paul-Bloomington, MN-WI",33460,45.0860618,-93.3635349
+"Raleigh, NC",39580,35.8308563,-78.6524499
+"Birmingham-Hoover, AL",13820,33.421481,-86.828585
+"New York-Newark-Jersey City, NY-NJ-PA",35620,40.928724,-73.936931
+"Boston-Cambridge-Newton, MA-NH",14460,42.519646,-71.094736
+"Miami-Fort Lauderdale-West Palm Beach, FL",33100,26.280945,-80.123791
+"Washington-Arlington-Alexandria, DC-VA-MD-WV",47900,38.860309,-77.402365
+"Phoenix-Mesa-Scottsdale, AZ",38060,33.175814,-112.013089

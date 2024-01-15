@@ -32,7 +32,7 @@ gds_db = Neo4jGPTQuery(
 
 mapbox_access_token = "pk.eyJ1Ijoic3RlZmZlbmhpbGwiLCJhIjoiY2ttc3p6ODlrMG1ybzJwcG10d3hoaDZndCJ9.YE2gGNJiw6deBuFgHRHPjg"
 
-us_geo = json.load(open("us-counties-u8.json", "r", encoding="utf-8"))
+us_geo = json.load(open("msa.geojson", "r", encoding="utf-8"))
 df = pd.read_csv("county-data.csv")
 
 app = Dash(__name__)
@@ -239,8 +239,14 @@ colors = [
 colors2 = ["#fdca26", "#ed7953", "#bd3786", "#7201a8", "#0d0887"]
 
 
+# @callback(
+#     Output('textarea-answer', 'value'),
+#     Input('textarea-query-button', 'n_clicks'),
+#     State('textarea-query', 'value')
+# )
 @callback(
-    Output('textarea-answer', 'value'),
+    [Output('textarea-answer', 'value'),
+     Output('locationForMap', 'data')], 
     Input('textarea-query-button', 'n_clicks'),
     State('textarea-query', 'value')
 )
@@ -248,28 +254,32 @@ def update_output(n_clicks, value):
     if n_clicks > 0:
         res = gds_db.run(value)
         flattened_res = [str(item) for sublist in res for item in sublist]
-        return ''.join(flattened_res)
+        answer = ''.join(flattened_res)
+        return answer, answer
+    else:
+        return ' ', ' '
     
 @callback(
         Output("choropleth", "figure"), 
         [Input("locationForMap", "data")]
 )
 def display_choropleth(value):
-    print('display_choropleth')
-    print(value)
-    value = 'a'
-    if not value:
-        raise PreventUpdate
+    # print('display_choropleth')
+    # print(value)
+    # if not value:
+    #     raise PreventUpdate
+    index = np.random.randint(0, 3)
+    center_list=[{"lat": 29.5145864, "lon": -98.3915999},{"lat": 40.4314699, "lon": -80.0629009},{"lat": 33.189281, "lon": -87.565155}]
     fig = px.choropleth_mapbox(
         df,
         geojson=us_geo,
         color='C_ID',
         locations="C_ID",
-        featureidkey="properties.gu_a3",
+        featureidkey="properties.geoid",
         hover_name="C_ID",
         opacity=0.7,  # hover_data = [],
-        center={"lat": 33.189281, "lon": -87.565155},
-        zoom=3.5,
+        center=center_list[index],
+        zoom=5,
     )
     fig.update_layout(
         margin={"r": 0, "t": 0, "l": 0, "b": 0}, mapbox_accesstoken=mapbox_access_token

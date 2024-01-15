@@ -29,7 +29,7 @@ import openai
 # from openai import OpenAI
 import os
 
-openai_key = "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"
+openai_key = ""
 # client = OpenAI(api_key=openai_key)
 
 
@@ -48,7 +48,7 @@ def schema_text(node_props, rel_props, rels):
 
 class Neo4jGPTQuery:
     def __init__(self, url, user, password, openai_api_key):
-        self.driver = GraphDatabase.driver(url, auth=(user, password), database="movie")
+        self.driver = GraphDatabase.driver(url, auth=(user, password), database="okn2")
         openai.api_key = openai_api_key
         # construct schema
         self.schema = self.generate_schema()
@@ -58,7 +58,9 @@ class Neo4jGPTQuery:
         node_props = self.query_database(node_properties_query)
         rel_props = self.query_database(rel_properties_query)
         rels = self.query_database(rel_query)
-        return schema_text(node_props, rel_props, rels)
+        input_schema = schema_text(node_props, rel_props, rels)
+        print(input_schema)
+        return input_schema
 
     def refresh_schema(self):
         self.schema = self.generate_schema()
@@ -68,12 +70,14 @@ class Neo4jGPTQuery:
         Task: Generate Cypher queries to query a Neo4j graph database based on the provided schema definition.
         Instructions:
         Use only the provided relationship types and properties.
+        When dealing with city names or other similar properties, construct the queries to allow for partial or inexact matches.Utilize Cypher's string functions like CONTAINS, STARTS WITH, ENDS WITH, or regular expressions for this purpose.
         Do not use any other relationship types or properties that are not provided.
         If you cannot generate a Cypher statement based on the provided schema, explain the reason to the user.
         Schema:
         {self.schema}
 
         Note: Do not include any explanations or apologies in your responses.
+        Ensure that the queries are efficient and optimized for performance, particularly when using pattern matching or regular expressions.
         """
 
     def query_database(self, neo4j_query, params={}):
