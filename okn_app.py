@@ -35,15 +35,17 @@ def CheckResponse(response):
         print("Failed to retrieve the content")
         return "0"
 
-default_map_location = 'http://localhost:8000/maps/default_map.html'
-default_map = requests.get(default_map_location)
-# Check if the request was successful
-if default_map.status_code == 200:
-    default_map_html = default_map.text  # or response.content for binary content
-    print("Map loaded successfully")
-else:
-    default_map_html = '0'
-    print("Map not loaded successfully")
+default_map_location = 'maps/default_map.html'
+# default_map = requests.get(default_map_location)
+# # Check if the request was successful
+# if default_map.status_code == 200:
+#     default_map_html = default_map.text  # or response.content for binary content
+#     # print("Map loaded successfully")
+# else:
+#     default_map_html = '0'
+#     # print("Map not loaded successfully")
+with open(default_map_location, 'r', encoding='utf-8') as file:
+    default_map_html = file.read()
 
 config = import_config("config.ini")
 openai_key = config["openai_key"]
@@ -323,8 +325,8 @@ def update_map(n_clicks, input_value):
     if n_clicks > 0:
         path = "."
         # json_file_path = os.path.join(path, 'floridaViolentCrimeData.json')
-        json_file_path = os.path.join(path, 'fake_cbsa_data.json')
-        # json_file_path = os.path.join(path, 'fake_cbsa_data2.json')
+        # json_file_path = os.path.join(path, 'fake_cbsa_data.json')
+        json_file_path = os.path.join(path, 'fake_cbsa_data2.json')
 
         # color = cm.linear.Blues_09
         # color = ['blue', 'red']
