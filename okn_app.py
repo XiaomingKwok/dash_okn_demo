@@ -273,14 +273,14 @@ def update_output(n_clicks, value):
     Input('infoForMap', 'data')
 )
 def update_map(map_data):
-    if map_data:  
+    if map_data and map_data.strip():
         print(map_data)
 
         florida_crime = json.loads(map_data)
 
         if isinstance(florida_crime, dict):
             florida_crime_df = pd.DataFrame(list(florida_crime.items()), columns=['Key', 'Value'])
-            color = ['blue']
+            color = ['red']
             if len(florida_crime_df) > 1:
                 color = ['blue', 'red']
 
