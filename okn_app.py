@@ -10,13 +10,20 @@ import plotly.graph_objs as go
 import statsmodels.api as sm
 import plotly.figure_factory as ff
 import numpy as np
+import os
+import requests
+import createMap
+import branca.colormap as cm
+import folium
 
 from gpt_helper import Neo4jGPTQuery
 from utils import import_config
 
 from dash.exceptions import PreventUpdate
 
-
+default_map_location = 'maps/default_map.html'
+with open(default_map_location, 'r', encoding='utf-8') as file:
+    default_map_html = file.read()
 config = import_config("config.ini")
 openai_key = config["openai_key"]
 neo4j_url = config["neo4j_url"]
@@ -30,7 +37,7 @@ gds_db = Neo4jGPTQuery(
         openai_api_key=openai_key,
     )
 
-mapbox_access_token = "pk.eyJ1Ijoic3RlZmZlbmhpbGwiLCJhIjoiY2ttc3p6ODlrMG1ybzJwcG10d3hoaDZndCJ9.YE2gGNJiw6deBuFgHRHPjg"
+# mapbox_access_token = "pk.eyJ1Ijoic3RlZmZlbmhpbGwiLCJhIjoiY2ttc3p6ODlrMG1ybzJwcG10d3hoaDZndCJ9.YE2gGNJiw6deBuFgHRHPjg"
 
 us_geo = json.load(open("msa.geojson", "r", encoding="utf-8"))
 df = pd.read_csv("county-data.csv")
@@ -40,7 +47,6 @@ app = Dash(__name__)
 # Create app layout
 app.layout = html.Div(
     [
-        dcc.Store(id="locationForMap"),
         dcc.Store(id="infoForMap"),
         # empty Div to trigger javascript file for graph resizing
         html.Div(id="output-clientside"),
@@ -207,7 +213,8 @@ app.layout = html.Div(
                             className="row container-display",
                         ),
                         html.Div(
-                            [dcc.Graph(id="choropleth")],
+                            [html.Iframe(id="choropleth", srcDoc=default_map_html,
+                                         style={'width': '100%', 'height': '500px'})],
                             # id="countGraphContainer",
                             className="pretty_container",
                         ),
@@ -246,46 +253,52 @@ colors2 = ["#fdca26", "#ed7953", "#bd3786", "#7201a8", "#0d0887"]
 # )
 @callback(
     [Output('textarea-answer', 'value'),
-     Output('locationForMap', 'data')], 
+     Output('infoForMap', 'data')], 
     Input('textarea-query-button', 'n_clicks'),
     State('textarea-query', 'value')
 )
 def update_output(n_clicks, value):
     if n_clicks > 0:
-        res = gds_db.run(value)
+        res, city_res = gds_db.run(value)
         flattened_res = [str(item) for sublist in res for item in sublist]
         answer = ''.join(flattened_res)
-        return answer, answer
+        print("city_res")
+        print(city_res)
+        return answer, city_res
     else:
-        return ' ', ' '
+        return ' ', {}
     
-@callback(
-        Output("choropleth", "figure"), 
-        [Input("locationForMap", "data")]
+@app.callback(
+    Output("choropleth", "srcDoc"),
+    Input('infoForMap', 'data')
 )
-def display_choropleth(value):
-    # print('display_choropleth')
-    # print(value)
-    # if not value:
-    #     raise PreventUpdate
-    index = np.random.randint(0, 3)
-    center_list=[{"lat": 29.5145864, "lon": -98.3915999},{"lat": 40.4314699, "lon": -80.0629009},{"lat": 33.189281, "lon": -87.565155}]
-    fig = px.choropleth_mapbox(
-        df,
-        geojson=us_geo,
-        color='C_ID',
-        locations="C_ID",
-        featureidkey="properties.geoid",
-        hover_name="C_ID",
-        opacity=0.7,  # hover_data = [],
-        center=center_list[index],
-        zoom=5,
-    )
-    fig.update_layout(
-        margin={"r": 0, "t": 0, "l": 0, "b": 0}, mapbox_accesstoken=mapbox_access_token
-    )
+def update_map(map_data):
+    if map_data:  
+        print(map_data)
 
-    return fig
+        florida_crime = json.loads(map_data)
+
+        if isinstance(florida_crime, dict):
+            florida_crime_df = pd.DataFrame(list(florida_crime.items()), columns=['Key', 'Value'])
+            color = ['blue']
+            if len(florida_crime_df) > 1:
+                color = ['blue', 'red']
+
+        elif isinstance(florida_crime, list):
+            florida_crime_df = pd.DataFrame(florida_crime, columns=['Key'])
+
+        hasValues = any(florida_crime_df.dtypes.apply(lambda x: pd.api.types.is_numeric_dtype(x)))
+        # description = "2022 Violent crime rate per 100k"
+        description=" "
+
+        area_type = 'cbsa'
+        map_html, mergedData = createMap.CreateMap(area_type, florida_crime, hasValues, description, color)
+        map_iframe = html.Iframe(srcDoc=map_html, width='100%', height='500px')
+        return map_html
+
+    else:
+        return default_map_html
+
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=8050)
