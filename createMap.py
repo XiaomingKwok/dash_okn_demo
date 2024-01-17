@@ -32,16 +32,16 @@ def CreateMap(areaType, data, hasValues, description, color):
     isCBSA = False
 
     if areaType.lower() == 'county':
-        geojson_location = 'geojson\counties.geojson'
+        geojson_location = os.path.join('geojson', 'counties.geojson')
         county_location = os.path.join("codes", "st01_al_cou2020.txt")
         isCounty = True
     elif areaType.lower() == 'state':
-        geojson_location = 'geojson\states.geojson'
+        geojson_location = os.path.join('geojson', 'states.geojson')
         isState = True
     else:
         # geojson_location = 'geojson\CBSA.geojson'
         # geojson_location = 'geojson\CBSA_smaller.geojson'
-        geojson_location = 'geojson\CBSA.geojson'
+        geojson_location = os.path.join('geojson', 'CBSA.geojson')
         cbsafp_location = os.path.join("codes", "cbsa2fipsxw.txt")
         isCBSA = True
 
