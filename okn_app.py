@@ -150,84 +150,107 @@ app.layout = html.Div(
                             [
                                 html.Div(
                                     [
-                                        html.P(id="max_text"),
                                         html.P(
-                                            "Maximum",
+                                            "Description:",
                                             style={
                                                 "text-align": "center",
                                                 "font-weight": "bold",
                                             },
                                         ),
                                         html.P(
-                                            id="max_name",
-                                            style={"text-align": "center"},
-                                        ),
-                                        html.P(
-                                            id="max_value",
-                                            style={"text-align": "center"},
+                                            id="title_value",
+                                            style={
+                                                "text-align": "center",
+                                                "font-weight": "bold",
+                                                "fontSize": "20px"
+                                           },
                                         ),
                                     ],
                                     className="mini_container",
-                                    id="max-value",
-                                    style={'width': '33%'},
+                                    id="title-value",
+                                    style={'width': '100%'},
                                 ),
-                                html.Div(
-                                    [
-                                        html.P(id="min_text"),
-                                        html.P(
-                                            "Minimum",
-                                            style={
-                                                "text-align": "center",
-                                                "font-weight": "bold",
-                                            },
-                                        ),
-                                        html.P(
-                                            id="min_name",
-                                            style={"text-align": "center"},
-                                        ),
-                                        html.P(
-                                            id="min_value",
-                                            style={"text-align": "center"},
-                                        ),
-                                    ],
-                                    className="mini_container",
-                                    id="min-text",
-                                    style={'width': '33%'},
-
-                                ),
-                                html.Div(
-                                    [
-                                        html.P(id="mean_text"),
-                                        html.P(
-                                            "Mean",
-                                            style={
-                                                "text-align": "center",
-                                                "font-weight": "bold",
-                                            },
-                                        ),
-                                        html.P(
-                                            id="mean_value", style={"text-align": "center"}
-                                        ),
-                                        html.P(
-                                            "Standard deviation",
-                                            style={
-                                                "text-align": "center",
-                                                "font-weight": "bold",
-                                            },
-                                        ),
-                                        html.P(
-                                            id="std_value", style={"text-align": "center"}
-                                        ),
-                                    ],
-                                    # ,
-                                    className="mini_container",
-                                    id="mean-text",
-                                    style={'width': '33%'},
-                                ),
+                                # html.Div(
+                                #     [
+                                #         html.P(id="max_text"),
+                                #         html.P(
+                                #             "Maximum",
+                                #             style={
+                                #                 "text-align": "center",
+                                #                 "font-weight": "bold",
+                                #             },
+                                #         ),
+                                #         html.P(
+                                #             id="max_name",
+                                #             style={"text-align": "center"},
+                                #         ),
+                                #         html.P(
+                                #             id="max_value",
+                                #             style={"text-align": "center"},
+                                #         ),
+                                #     ],
+                                #     className="mini_container",
+                                #     id="max-value",
+                                #     style={'width': '33%'},
+                                # ),
+                                # html.Div(
+                                #     [
+                                #         html.P(id="min_text"),
+                                #         html.P(
+                                #             "Minimum",
+                                #             style={
+                                #                 "text-align": "center",
+                                #                 "font-weight": "bold",
+                                #             },
+                                #         ),
+                                #         html.P(
+                                #             id="min_name",
+                                #             style={"text-align": "center"},
+                                #         ),
+                                #         html.P(
+                                #             id="min_value",
+                                #             style={"text-align": "center"},
+                                #         ),
+                                #     ],
+                                #     className="mini_container",
+                                #     id="min-text",
+                                #     style={'width': '33%'},
+                                #
+                                # ),
+                                # html.Div(
+                                #     [
+                                #         html.P(id="mean_text"),
+                                #         html.P(
+                                #             "Mean",
+                                #             style={
+                                #                 "text-align": "center",
+                                #                 "font-weight": "bold",
+                                #             },
+                                #         ),
+                                #         html.P(
+                                #             id="mean_value", style={"text-align": "center"}
+                                #         ),
+                                #         html.P(
+                                #             "Standard deviation",
+                                #             style={
+                                #                 "text-align": "center",
+                                #                 "font-weight": "bold",
+                                #             },
+                                #         ),
+                                #         html.P(
+                                #             id="std_value", style={"text-align": "center"}
+                                #         ),
+                                #     ],
+                                #     # ,
+                                #     className="mini_container",
+                                #     id="mean-text",
+                                #     style={'width': '33%'},
+                                # ),
                             ],
                             id="info-container",
                             className="row container-display",
-                            style={'width': '100%', 'display': 'none'},
+                            # style={'width': '100%', 'display': 'none'},
+                            style={'width': '100%'},
                         ),
                         html.Div(
                             [html.Iframe(id="choropleth", srcDoc=default_map_html,
@@ -287,16 +310,19 @@ def update_output(n_clicks, value):
     
 @app.callback(
     [Output("choropleth", "srcDoc"),
-     Output("max_value", "children"),
-     Output("min_value", "children"),
-     Output("mean_value", "children"),
-     Output("std_value", "children"),
+     Output("title_value", "children"),
+     # Output("max_value", "children"),
+     # Output("min_value", "children"),
+     # Output("mean_value", "children"),
+     # Output("std_value", "children"),
      Output('info-container', 'style')],
     Input('infoForMap', 'data')
 )
 def update_map(map_data):
-    max_value = min_value = mean_value = std_value = " "
-    style = {'width': '100%', 'display': 'none'}
+    # max_value = min_value = mean_value = std_value = " "
+    # style = {'width': '100%', 'display': 'none'}
+    style = {'width': '100%'}
+    title = " "
     # print("The max value hasn't been set")
     if map_data and map_data.strip():
         print(map_data)
@@ -304,7 +330,8 @@ def update_map(map_data):
 
         if isinstance(provided_data, dict):
             provided_data_df = pd.DataFrame(list(provided_data.items()), columns=['Key', 'Value'])
-            max_value, min_value, mean_value, std_value = getCharacteristics(provided_data_df)
+
+            # max_value, min_value, mean_value, std_value = getCharacteristics(provided_data_df)
             style = {'width': '100%'}
             # print(max_value)
             color = ['red']
@@ -316,16 +343,36 @@ def update_map(map_data):
 
         hasValues = any(provided_data_df.dtypes.apply(lambda x: pd.api.types.is_numeric_dtype(x)))
         # description = "2022 Violent crime rate per 100k"
-        description=" "
+        # description=" "
+        description = "Number of people who have a dishwasher"
 
         area_type = 'cbsa'
         map_html, mergedData = createMap.CreateMap(area_type, provided_data, hasValues, description, color)
+        title = description + " in "
+
+        numLocs = len(mergedData['NAME'])
+        print(f"The number of locations is {numLocs}")
+        if numLocs == 1:
+            title += mergedData['NAME']
+        elif numLocs == 2:
+            title += mergedData['NAME'](0) + " and " + mergedData['NAME'](1)
+        elif numLocs != 0:
+            iteration = 1
+            for location_name in mergedData["NAME"]:
+                if iteration + 1 != numLocs:
+                    title += location_name + ", "
+                    iteration +=1
+                else:
+                    title += location_name + ", and " + mergedData["Name"](-1)
+                    break
+
         # map_iframe = html.Iframe(srcDoc=map_html, width='100%', height='500px')
-        return map_html, max_value, min_value, mean_value, std_value, style
+        # return map_html, max_value, min_value, mean_value, std_value, style
+        return map_html, title, style
 
     else:
-        return default_map_html, max_value, min_value, mean_value, std_value, style
-
+        # return default_map_html, max_value, min_value, mean_value, std_value, style
+        return default_map_html, title, style
 
 if __name__ == "__main__":
     app.run(debug=True, port=8050)
