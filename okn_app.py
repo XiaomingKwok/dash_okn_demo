@@ -21,6 +21,18 @@ from utils import import_config
 
 from dash.exceptions import PreventUpdate
 
+
+def getCharacteristics(provided_data_df):
+    # print('Got to function')
+    maxValue = max(provided_data_df['Value'])
+    minValue = min(provided_data_df['Value'])
+    meanValue = provided_data_df['Value'].mean()
+    if len(provided_data_df['Value']) == 1:
+        stdValue = "N/A"
+    else:
+        stdValue = round(provided_data_df['Value'].std(), 2)
+    return maxValue, minValue, meanValue, stdValue
+
 default_map_location = 'maps/default_map.html'
 with open(default_map_location, 'r', encoding='utf-8') as file:
     default_map_html = file.read()
@@ -138,7 +150,7 @@ app.layout = html.Div(
                             [
                                 html.Div(
                                     [
-                                        html.P(id="well_text"),
+                                        html.P(id="max_text"),
                                         html.P(
                                             "Maximum",
                                             style={
@@ -156,11 +168,12 @@ app.layout = html.Div(
                                         ),
                                     ],
                                     className="mini_container",
-                                    id="wells",
+                                    id="max-value",
+                                    style={'width': '33%'},
                                 ),
                                 html.Div(
                                     [
-                                        html.P(id="gasText"),
+                                        html.P(id="min_text"),
                                         html.P(
                                             "Minimum",
                                             style={
@@ -178,11 +191,13 @@ app.layout = html.Div(
                                         ),
                                     ],
                                     className="mini_container",
-                                    id="gas",
+                                    id="min-text",
+                                    style={'width': '33%'},
+
                                 ),
                                 html.Div(
                                     [
-                                        html.P(id="oilText"),
+                                        html.P(id="mean_text"),
                                         html.P(
                                             "Mean",
                                             style={
@@ -191,7 +206,7 @@ app.layout = html.Div(
                                             },
                                         ),
                                         html.P(
-                                            id="mean", style={"text-align": "center"}
+                                            id="mean_value", style={"text-align": "center"}
                                         ),
                                         html.P(
                                             "Standard deviation",
@@ -201,16 +216,18 @@ app.layout = html.Div(
                                             },
                                         ),
                                         html.P(
-                                            id="st_dev", style={"text-align": "center"}
+                                            id="std_value", style={"text-align": "center"}
                                         ),
                                     ],
                                     # ,
                                     className="mini_container",
-                                    id="oil",
+                                    id="mean-text",
+                                    style={'width': '33%'},
                                 ),
                             ],
                             id="info-container",
                             className="row container-display",
+                            style={'width': '100%', 'display': 'none'},
                         ),
                         html.Div(
                             [html.Iframe(id="choropleth", srcDoc=default_map_html,
@@ -269,35 +286,45 @@ def update_output(n_clicks, value):
         return ' ', {}
     
 @app.callback(
-    Output("choropleth", "srcDoc"),
+    [Output("choropleth", "srcDoc"),
+     Output("max_value", "children"),
+     Output("min_value", "children"),
+     Output("mean_value", "children"),
+     Output("std_value", "children"),
+     Output('info-container', 'style')],
     Input('infoForMap', 'data')
 )
 def update_map(map_data):
+    max_value = min_value = mean_value = std_value = " "
+    style = {'width': '100%', 'display': 'none'}
+    # print("The max value hasn't been set")
     if map_data and map_data.strip():
         print(map_data)
+        provided_data = json.loads(map_data)
 
-        florida_crime = json.loads(map_data)
-
-        if isinstance(florida_crime, dict):
-            florida_crime_df = pd.DataFrame(list(florida_crime.items()), columns=['Key', 'Value'])
+        if isinstance(provided_data, dict):
+            provided_data_df = pd.DataFrame(list(provided_data.items()), columns=['Key', 'Value'])
+            max_value, min_value, mean_value, std_value = getCharacteristics(provided_data_df)
+            style = {'width': '100%'}
+            # print(max_value)
             color = ['red']
-            if len(florida_crime_df) > 1:
+            if len(provided_data_df) > 1:
                 color = ['blue', 'red']
 
-        elif isinstance(florida_crime, list):
-            florida_crime_df = pd.DataFrame(florida_crime, columns=['Key'])
+        elif isinstance(provided_data, list):
+            provided_data_df = pd.DataFrame(provided_data, columns=['Key'])
 
-        hasValues = any(florida_crime_df.dtypes.apply(lambda x: pd.api.types.is_numeric_dtype(x)))
+        hasValues = any(provided_data_df.dtypes.apply(lambda x: pd.api.types.is_numeric_dtype(x)))
         # description = "2022 Violent crime rate per 100k"
         description=" "
 
         area_type = 'cbsa'
-        map_html, mergedData = createMap.CreateMap(area_type, florida_crime, hasValues, description, color)
-        map_iframe = html.Iframe(srcDoc=map_html, width='100%', height='500px')
-        return map_html
+        map_html, mergedData = createMap.CreateMap(area_type, provided_data, hasValues, description, color)
+        # map_iframe = html.Iframe(srcDoc=map_html, width='100%', height='500px')
+        return map_html, max_value, min_value, mean_value, std_value, style
 
     else:
-        return default_map_html
+        return default_map_html, max_value, min_value, mean_value, std_value, style
 
 
 if __name__ == "__main__":
