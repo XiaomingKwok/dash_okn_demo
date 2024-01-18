@@ -83,7 +83,7 @@ app.layout = html.Div(
                         html.Div(
                             [
                                 html.H4(
-                                    "OKN Project - Health, Justice, and Household in Rural Areas",
+                                    "OKN-A Cross-Domain Knowledge Graph to Integrate Health and Justice for Rural Resilience",
                                     style={"font-weight": "bold"},
                                 ),
                                 # html.H5(
@@ -115,8 +115,8 @@ app.layout = html.Div(
                             style={"text-align": "center", "font-weight": "bold"},
                         ),
                         html.P(
-                            "Please provide a concise and straightforward query. For example:"
-                            " What is the average mortgage amount for single-family homes compared to multi-family units?",
+                            "Please provide a concise and straightforward query. For example: "
+                            "What percentage of people in Detroit have a dishwasher?",
                             className="control_label",
                             style={"text-align": "justify"},
                         ),
