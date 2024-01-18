@@ -151,7 +151,7 @@ app.layout = html.Div(
                                 html.Div(
                                     [
                                         html.P(
-                                            "Description:",
+                                            "Location(s):",
                                             style={
                                                 "text-align": "center",
                                                 "font-weight": "bold",
@@ -343,19 +343,20 @@ def update_map(map_data):
 
         hasValues = any(provided_data_df.dtypes.apply(lambda x: pd.api.types.is_numeric_dtype(x)))
         # description = "2022 Violent crime rate per 100k"
-        # description=" "
-        description = "Number of people who have a dishwasher"
+        description=""
+        # description = "Number of people who have a dishwasher"
 
         area_type = 'cbsa'
         map_html, mergedData = createMap.CreateMap(area_type, provided_data, hasValues, description, color)
-        title = description + " in "
+        # title = description + " in "
+        title = description
 
         numLocs = len(mergedData['NAME'])
         print(f"The number of locations is {numLocs}")
         if numLocs == 1:
             title += mergedData['NAME']
         elif numLocs == 2:
-            title += mergedData['NAME'](0) + " and " + mergedData['NAME'](1)
+            title += mergedData['NAME'][0] + " and " + mergedData['NAME'][1]
         elif numLocs != 0:
             iteration = 1
             for location_name in mergedData["NAME"]:
@@ -363,7 +364,7 @@ def update_map(map_data):
                     title += location_name + ", "
                     iteration +=1
                 else:
-                    title += location_name + ", and " + mergedData["Name"](-1)
+                    title += location_name + ", and " + mergedData["NAME"][iteration]
                     break
 
         # map_iframe = html.Iframe(srcDoc=map_html, width='100%', height='500px')
