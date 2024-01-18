@@ -10,4 +10,5 @@ def import_config(config_file='config.ini'):
     config['neo4j_url'] = content['neo4j']['url']
     config['neo4j_user'] = content['neo4j']['user']
     config['neo4j_password'] = content['neo4j']['password']
+    config['server_host'] = content['server']['host']
     return config

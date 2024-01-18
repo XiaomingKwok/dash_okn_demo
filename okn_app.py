@@ -41,6 +41,7 @@ openai_key = config["openai_key"]
 neo4j_url = config["neo4j_url"]
 neo4j_user = config["neo4j_user"]
 neo4j_password = config["neo4j_password"]
+server_host = config["server_host"]
 
 gds_db = Neo4jGPTQuery(
         url=neo4j_url,
@@ -376,4 +377,4 @@ def update_map(map_data):
         return default_map_html, title, style
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8050)
+    app.run(host=config["server_host"], debug=True, port=8050)
