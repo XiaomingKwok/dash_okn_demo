@@ -327,50 +327,54 @@ def update_map(map_data):
     # print("The max value hasn't been set")
     if map_data and map_data.strip():
         print(map_data)
-        provided_data = json.loads(map_data)
 
-        if isinstance(provided_data, dict):
-            provided_data_df = pd.DataFrame(list(provided_data.items()), columns=['Key', 'Value'])
+        try:
+            provided_data = json.loads(map_data)
 
-            # max_value, min_value, mean_value, std_value = getCharacteristics(provided_data_df)
-            style = {'width': '100%'}
-            # print(max_value)
-            color = ['red']
-            if len(provided_data_df) > 1:
-                color = ['blue', 'red']
+            if isinstance(provided_data, dict):
+                provided_data_df = pd.DataFrame(list(provided_data.items()), columns=['Key', 'Value'])
 
-        elif isinstance(provided_data, list):
-            provided_data_df = pd.DataFrame(provided_data, columns=['Key'])
+                # max_value, min_value, mean_value, std_value = getCharacteristics(provided_data_df)
+                style = {'width': '100%'}
+                # print(max_value)
+                color = ['red']
+                if len(provided_data_df) > 1:
+                    color = ['blue', 'red']
 
-        hasValues = any(provided_data_df.dtypes.apply(lambda x: pd.api.types.is_numeric_dtype(x)))
-        # description = "2022 Violent crime rate per 100k"
-        description=""
-        # description = "Number of people who have a dishwasher"
+            elif isinstance(provided_data, list):
+                provided_data_df = pd.DataFrame(provided_data, columns=['Key'])
 
-        area_type = 'cbsa'
-        map_html, mergedData = createMap.CreateMap(area_type, provided_data, hasValues, description, color)
-        # title = description + " in "
-        title = description
+            hasValues = any(provided_data_df.dtypes.apply(lambda x: pd.api.types.is_numeric_dtype(x)))
+            # description = "2022 Violent crime rate per 100k"
+            description=""
+            # description = "Number of people who have a dishwasher"
 
-        numLocs = len(mergedData['NAME'])
-        print(f"The number of locations is {numLocs}")
-        if numLocs == 1:
-            title += mergedData['NAME']
-        elif numLocs == 2:
-            title += mergedData['NAME'][0] + " and " + mergedData['NAME'][1]
-        elif numLocs != 0:
-            iteration = 1
-            for location_name in mergedData["NAME"]:
-                if iteration + 1 != numLocs:
-                    title += location_name + ", "
-                    iteration +=1
-                else:
-                    title += location_name + ", and " + mergedData["NAME"][iteration]
-                    break
+            area_type = 'cbsa'
+            map_html, mergedData = createMap.CreateMap(area_type, provided_data, hasValues, description, color)
+            # title = description + " in "
+            title = description
 
-        # map_iframe = html.Iframe(srcDoc=map_html, width='100%', height='500px')
-        # return map_html, max_value, min_value, mean_value, std_value, style
-        return map_html, title, style
+            numLocs = len(mergedData['NAME'])
+            print(f"The number of locations is {numLocs}")
+            if numLocs == 1:
+                title += mergedData['NAME']
+            elif numLocs == 2:
+                title += mergedData['NAME'][0] + " and " + mergedData['NAME'][1]
+            elif numLocs != 0:
+                iteration = 1
+                for location_name in mergedData["NAME"]:
+                    if iteration + 1 != numLocs:
+                        title += location_name + ", "
+                        iteration +=1
+                    else:
+                        title += location_name + ", and " + mergedData["NAME"][iteration]
+                        break
+            # map_iframe = html.Iframe(srcDoc=map_html, width='100%', height='500px')
+            # return map_html, max_value, min_value, mean_value, std_value, style
+            return map_html, title, style
+        except json.JSONDecodeError as e:
+            print(e)
+            return default_map_html, title, style
 
     else:
         # return default_map_html, max_value, min_value, mean_value, std_value, style
