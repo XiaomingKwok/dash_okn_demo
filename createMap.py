@@ -94,13 +94,7 @@ def CreateMap(areaType, data, hasValues, description, color):
     else:
         gradient = False
 
-    if gradient:
-        max_value = max(values)
-        min_value = min(values)
-        color_scale = cm.LinearColormap(color, vmin=min_value, vmax=max_value)
-        # color_scale = color.scale(min_value, max_value)
-        # colormap = cm.LinearColormap(color_scale, vmin= min_value, vmax=max_value)
-        # colormap.save('colormap.html')
+
 
     def select_style_function(merged, paramName):
         def style_function(feature):
@@ -140,6 +134,14 @@ def CreateMap(areaType, data, hasValues, description, color):
     # gdf.to_file('geojson\\CBSA_smallest.geojson', driver='GeoJSON')
 
     merged = gdf.merge(data_df, on=paramName)
+
+    if gradient:
+        max_value = max(merged['VALUE'])
+        min_value = min(merged['VALUE'])
+        color_scale = cm.LinearColormap(color, vmin=min_value, vmax=max_value)
+        # color_scale = color.scale(min_value, max_value)
+        # colormap = cm.LinearColormap(color_scale, vmin= min_value, vmax=max_value)
+        # colormap.save('colormap.html')
 
     # fig = px.choropleth(merged, geojson=merged, locations=merged.index, color='VALUE',
     #                     color_continuous_scale='Viridis')
